@@ -1,11 +1,13 @@
 import { html, LitElement, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { dispatchCustomEvent } from "./lib/events";
+import {BlocksData, PayloadHandler} from "./lib/payload";
 
 @customElement("bc-export")
 class BcExport extends LitElement {
   @property() blocks : Array<{ code: string; externalKey: string | null }> = [];
   @property() code = ""
+  @property() data : BlocksData
 
   static styles = css`
     .container {
@@ -29,11 +31,12 @@ class BcExport extends LitElement {
 
   constructor() {
     super();
+    this.data = new BlocksData();
   }
 
   performExport(preventClipboard: boolean = false) {
-    const data = {code:this.code, blocks:this.blocks}
-    const hash = encodeURIComponent(btoa(JSON.stringify(data)))
+
+    const hash = PayloadHandler.toHash(this.data)
     dispatchCustomEvent(this, "export", {hash}, {bubble: true});
     if (preventClipboard)
         return
