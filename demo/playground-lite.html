@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Playground Light</title>
+  <script type="module" src="/src/index.ts"></script>
+</head>
+<body>
+<bc-playground-lite
+    blocks="true"
+    authorizer="true"
+    add_block="false"
+    token="true"
+    result="true"
+    facts="true"
+    custom_external="true"
+    public_key="true"
+    third_party="true"
+    >
+  <code class="block">user(12)</code>
+  <code class="block">check if user(12)</code>
+  <code class="block">check if user(12)</code>
+  <code class="authorizer">check if user(12)</code>
+</bc-playground-lite>
+</body>
+</html>

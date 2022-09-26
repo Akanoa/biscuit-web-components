@@ -1,3 +1,6 @@
+import {BlocksData} from "./payload";
+import { execute } from "@biscuit-auth/biscuit-wasm-support";
+
 export type LibMarker = {
   position: {
     start: number;
@@ -40,6 +43,59 @@ export const convertError = (error: LibError) => {
     end: error.position.end,
   };
 };
+
+export const performExecute = (data: BlocksData, authorizer_code: string) => {
+  let authorizer_world = [];
+  let authorizer_result = null;
+  const parseErrors = {
+    blocks: [],
+    authorizer: [],
+  };
+  const markers = {
+    blocks: [],
+    authorizer: [],
+  };
+
+  let validBlocks = data.getValidBlocks()
+
+  console.log(validBlocks);
+
+  const authorizerQuery = {
+    token_blocks:
+      validBlocks.length > 0
+        ? validBlocks.map(({ code }) => code)
+        : ["check if true"],
+    authorizer_code,
+    query: "",
+    external_private_keys: validBlocks.map(
+      ({ externalKey }) => externalKey
+    ),
+  };
+  const authorizerResult = execute(authorizerQuery);
+  console.debug({ authorizerQuery, authorizerResult });
+  authorizer_world = authorizerResult.Ok?.authorizer_world ?? [];
+  authorizer_result = authorizerResult;
+  markers.authorizer =
+    authorizerResult.Ok?.authorizer_editor.markers.map(convertMarker) ?? [];
+  parseErrors.authorizer =
+    authorizerResult.Err?.authorizer.map(convertError) ?? [];
+
+  markers.blocks =
+    authorizerResult.Ok?.token_blocks.map(
+      (b: { markers: Array<LibMarker> }) => b.markers.map(convertMarker)
+    ) ?? [];
+  parseErrors.blocks =
+    authorizerResult.Err?.blocks.map((b: Array<LibError>) =>
+      b.map(convertError)
+    ) ?? [];
+
+  return {
+    parseErrors,
+    authorizer_world,
+    authorizer_result,
+    markers
+  }
+}
 
 export type Result<A, E> = {
   Ok?: A;

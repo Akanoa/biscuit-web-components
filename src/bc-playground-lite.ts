@@ -14,24 +14,27 @@ import {BlockData, BlocksData, PayloadHandler} from "./lib/payload";
 /**
  * A fully tunable datalog biscuit playground
  */
-@customElement("bc-playground")
-export class BCDatalogPlayground extends LitElement {
-  @property() fromHash = null;
-  @property({
-    converter: {
-      toAttribute(value: Configuration): string {
-        return value.toString()
-      },
-      fromAttribute(value: string): Configuration {
-        return Configuration.fromString(value)
-      }
-    }
-  }) configuration: Configuration;
+@customElement("bc-playground-lite")
+export class BCDatalogPlaygroundLite extends LitElement {
 
-  @state() data: BlocksData
-  @state() private started = false;
+  @property() blocks = false;
+  @property() facts = false;
+  @property() token = false;
+  @property() third_party = false;
+  @property() custom_external = false;
+  @property() regenerate = false;
+  @property() public_key = false;
+  @property() result = false;
+  @property() add_block = false;
+  @property() authorizer = false;
+
+  @state() started = false;
+  @state() data : BlocksData;
+  @state() configuration : Configuration;
 
   static styles = css`
+    
+ 
 
     .block {
       margin-bottom: 20px;
@@ -82,13 +85,35 @@ export class BCDatalogPlayground extends LitElement {
     .key_details {
       margin-top: -4px;
     }
+    
+    code.token {
+      font-size: 1em;
+    }
   `;
 
   constructor() {
     super();
 
+    const code = this.querySelector(".authorizer")?.textContent ?? "";
+    this.data = new BlocksData(code)
+
+    const blockChildren = this.querySelectorAll(".block");
+    Array.from(blockChildren)
+      .map((b, i) => {
+        const code = b.textContent ?? "";
+        let externalKey = null;
+        if (i > 0) {
+          externalKey = b.getAttribute("privateKey");
+        }
+        return new BlockData(code, externalKey);
+      })
+      .filter(({ code }, i) => i === 0 || code !== "")
+      .forEach((block) => {
+        this.data.addBlock(block)
+      });
+
     this.configuration = new Configuration();
-    this.data = new BlocksData()
+
   }
 
   firstUpdated() {
@@ -103,18 +128,9 @@ export class BCDatalogPlayground extends LitElement {
 
   // Triggered when attributes change
   attributeChangedCallback(name: string, oldval: string | null, newval: string | null) {
-
-    super.attributeChangedCallback(name, oldval, newval)
-
-<<<<<<< Updated upstream
-      if (name === "fromhash" && newval !== null) {
-          this.data = PayloadHandler.fromHash(newval);
-      }
-=======
-    if (name === "fromhash" && newval !== null) {
-      this.data = PayloadHandler.fromHash(newval);
+    if (typeof newval === 'string') {
+      this.configuration.set(name, newval === "true")
     }
->>>>>>> Stashed changes
   }
 
   // A new block is added to the chain
@@ -200,39 +216,6 @@ export class BCDatalogPlayground extends LitElement {
   render() {
     if (this.started) {
       // Filter empty blocks but keep the authority even if empty
-<<<<<<< Updated upstream
-      let validBlocks = this.data.getValidBlocks()
-      console.log(validBlocks)
-      const authorizerQuery = {
-        token_blocks:
-          validBlocks.length > 0
-            ? validBlocks.map(({ code }) => code)
-            : ["check if true"],
-        authorizer_code: this.data.authorizerCode,
-        query: "",
-        external_private_keys: validBlocks.map(
-          ({ externalKey }) => externalKey
-        ),
-      };
-      const authorizerResult = execute(authorizerQuery);
-      console.debug({ authorizerQuery, authorizerResult });
-      authorizer_world = authorizerResult.Ok?.authorizer_world ?? [];
-      authorizer_result = authorizerResult;
-      markers.authorizer =
-        authorizerResult.Ok?.authorizer_editor.markers.map(convertMarker) ?? [];
-      parseErrors.authorizer =
-        authorizerResult.Err?.authorizer.map(convertError) ?? [];
-
-      markers.blocks =
-        authorizerResult.Ok?.token_blocks.map(
-          (b: { markers: Array<LibMarker> }) => b.markers.map(convertMarker)
-        ) ?? [];
-      parseErrors.blocks =
-        authorizerResult.Err?.blocks.map((b: Array<LibError>) =>
-          b.map(convertError)
-        ) ?? [];
-    }
-=======
 
       let {
         parseErrors,
@@ -241,7 +224,6 @@ export class BCDatalogPlayground extends LitElement {
         markers
       } = performExecute(this.data, this.data.authorizerCode);
 
->>>>>>> Stashed changes
     // Display the authorizer world
     const factContent = html`<p>Facts</p>
     <bc-authorizer-content
@@ -249,13 +231,6 @@ export class BCDatalogPlayground extends LitElement {
     ></bc-authorizer-content>`;
 
     const facts = this.configuration.get(ConfigurationEntry.facts) ? factContent : html``;
-
-    // Display export module
-    const exportContent = html`
-      <bc-export id="export_button" @bc-export:export="${(e: CustomEvent) => this.onExport(e)}"
-                 .data="${this.data}"></bc-export>
-    `;
-
     const token = this.configuration.get(ConfigurationEntry.token) ? this.renderToken() : ``;
 
     const result = this.configuration.get(ConfigurationEntry.result) ? html`      <p>Result</p>
@@ -271,7 +246,6 @@ export class BCDatalogPlayground extends LitElement {
           margin-bottom: 30px;
         }
       </style>
-      ${exportContent}
       ${this.renderBlocks(markers.blocks, parseErrors.blocks)}
       ${authorizer}
       ${result}
@@ -400,7 +374,7 @@ export class BCDatalogPlayground extends LitElement {
 
     return html`<p>Token</p>
     <div class="content">
-    <code>${token}</code>
+    <code class="token">${token}</code>
     </div>`
   }
 }

@@ -51,7 +51,14 @@ export class BlocksData {
   }
 
   getValidBlocks() : Array<BlockData> {
-    console.log(this.blocks[0])
+<<<<<<< Updated upstream
+=======
+
+    if (this.blocks.length === 0) {
+      return []
+    }
+
+>>>>>>> Stashed changes
     let validBlocks = this.blocks.slice(1).filter((x) => x.code !== "");
     validBlocks = [this.blocks[0], ...validBlocks]
     return validBlocks
