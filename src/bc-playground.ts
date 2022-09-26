@@ -106,15 +106,9 @@ export class BCDatalogPlayground extends LitElement {
 
     super.attributeChangedCallback(name, oldval, newval)
 
-<<<<<<< Updated upstream
-      if (name === "fromhash" && newval !== null) {
-          this.data = PayloadHandler.fromHash(newval);
-      }
-=======
     if (name === "fromhash" && newval !== null) {
       this.data = PayloadHandler.fromHash(newval);
     }
->>>>>>> Stashed changes
   }
 
   // A new block is added to the chain
@@ -199,41 +193,6 @@ export class BCDatalogPlayground extends LitElement {
   // Main rendering method
   render() {
     if (this.started) {
-      // Filter empty blocks but keep the authority even if empty
-<<<<<<< Updated upstream
-      let validBlocks = this.data.getValidBlocks()
-      console.log(validBlocks)
-      const authorizerQuery = {
-        token_blocks:
-          validBlocks.length > 0
-            ? validBlocks.map(({ code }) => code)
-            : ["check if true"],
-        authorizer_code: this.data.authorizerCode,
-        query: "",
-        external_private_keys: validBlocks.map(
-          ({ externalKey }) => externalKey
-        ),
-      };
-      const authorizerResult = execute(authorizerQuery);
-      console.debug({ authorizerQuery, authorizerResult });
-      authorizer_world = authorizerResult.Ok?.authorizer_world ?? [];
-      authorizer_result = authorizerResult;
-      markers.authorizer =
-        authorizerResult.Ok?.authorizer_editor.markers.map(convertMarker) ?? [];
-      parseErrors.authorizer =
-        authorizerResult.Err?.authorizer.map(convertError) ?? [];
-
-      markers.blocks =
-        authorizerResult.Ok?.token_blocks.map(
-          (b: { markers: Array<LibMarker> }) => b.markers.map(convertMarker)
-        ) ?? [];
-      parseErrors.blocks =
-        authorizerResult.Err?.blocks.map((b: Array<LibError>) =>
-          b.map(convertError)
-        ) ?? [];
-    }
-=======
-
       let {
         parseErrors,
         authorizer_world,
@@ -241,7 +200,6 @@ export class BCDatalogPlayground extends LitElement {
         markers
       } = performExecute(this.data, this.data.authorizerCode);
 
->>>>>>> Stashed changes
     // Display the authorizer world
     const factContent = html`<p>Facts</p>
     <bc-authorizer-content
