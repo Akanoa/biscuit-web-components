@@ -20,10 +20,8 @@ class ThirdPartyBlockDetails extends LitElement {
   static styles = css`
     .container {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
-    }
-    .confirmation {
-      display: none;
     }
 
     .button {
@@ -31,6 +29,7 @@ class ThirdPartyBlockDetails extends LitElement {
       box-sizing: border-box;
       margin-top: -5px;
       font-weight: bold;
+      min-width: 120px;
     }
     
     .key_container {
@@ -43,15 +42,18 @@ class ThirdPartyBlockDetails extends LitElement {
     }
 
     .key_container .key {
-      line-height: 0;
+      margin-top: -9px;
       margin-left: 2px;
-      user-select: all;
+      user-select: text;
+      -moz-user-select: text;
       padding: 10px;
       box-sizing: border-box;
     }
 
     .key_container .key[contenteditable] {
       outline: 0 solid transparent;
+      font-size: 0.9em;
+      overflow-wrap: anywhere;
     }
   `
 
@@ -102,11 +104,11 @@ class ThirdPartyBlockDetails extends LitElement {
     navigator.clipboard.writeText(data).then(r => {
       console.debug("copied")
       if (this.shadowRoot !== null) {
-        const confirmationElement = this.shadowRoot.querySelector(".confirmation") as HTMLLIElement;
-        if (confirmationElement !== null) {
-          confirmationElement.style.display = "block"
+        const copyButton = this.shadowRoot.querySelector("#copy-button") as HTMLButtonElement;
+        if (copyButton !== null) {
+          copyButton.textContent = "Copied!"
           setTimeout(() => {
-              confirmationElement.style.display = "none"
+              copyButton.textContent = "Copy Public Key"
             }, 2000)
         }
       }
@@ -121,7 +123,7 @@ class ThirdPartyBlockDetails extends LitElement {
 
       const customExternalContent = html`<div class="key_container">
         <div class="symbol">🔑</div>
-        <div contenteditable="true" class="key"
+        <div role="textbox" contenteditable="true" class="key"
              @blur="${(e: InputEvent) => this.onKeyChange(e)}"
         >${this._privateKey}</div>
       </div>`
@@ -129,13 +131,13 @@ class ThirdPartyBlockDetails extends LitElement {
     const customExternalKey = this.allowsCustomKey ? customExternalContent : '';
 
     const regenerate = this.allowsRegenerate ? html`<button class="button" @click="${this.onRegeneratePrivateKey}">Regenerate Private Key</button>` : ``;
-    const publicKey = this.displayPublicKey ? html`<button class="button" @click="${this.onCopyButton}" type="button">Copy Public Key</button>
-    <div class="confirmation">Copied! </div>` : ``;
+    const publicKey = this.displayPublicKey ? html`<button id="copy-button" class="button" @click="${this.onCopyButton}" type="button">Copy Public Key</button>` : ``;
 
     return html`
       <div class="container">
-        ${regenerate}
+        
         ${publicKey}
+        ${regenerate}
         ${customExternalKey}
       </div>
     `;

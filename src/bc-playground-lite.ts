@@ -34,8 +34,6 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
   static styles = css`
     
- 
-
     .block {
       margin-bottom: 20px;
     }
@@ -53,6 +51,24 @@ export class BCDatalogPlaygroundLite extends LitElement {
       padding: 5px;
     }
 
+    .blockHeader .blockHeaderVerticalContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .blockHeader .blockHeaderVerticalContainer .blockHeaderHorizontalContainer {
+      display: flex;
+      flex-direction: row;
+    }
+    .blockHeader .blockHeaderVerticalContainer .blockHeaderHorizontalContainer .block-title {
+      margin-right: 10px;
+    }
+    .blockHeader .blockHeaderVerticalContainer .blockHeaderHorizontalContainer .switch-mode {
+      margin-top: 2px;
+      margin-left: 10px;
+    }
+
     code {
       border: 1px rgba(128, 128, 128, 0.4) solid;
       display: flex;
@@ -67,7 +83,6 @@ export class BCDatalogPlaygroundLite extends LitElement {
       max-width: 100%;
       padding: 10px;
       box-sizing: border-box;
-      font-size: 1.2em;
     }
 
     .button {
@@ -84,10 +99,6 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
     .key_details {
       margin-top: -4px;
-    }
-    
-    code.token {
-      font-size: 1em;
     }
   `;
 
@@ -230,6 +241,8 @@ export class BCDatalogPlaygroundLite extends LitElement {
         .content=${authorizer_world}
     ></bc-authorizer-content>`;
 
+    console.debug(authorizer_result)
+
     const facts = this.configuration.get(ConfigurationEntry.facts) ? factContent : html``;
     const token = this.configuration.get(ConfigurationEntry.token) ? this.renderToken() : ``;
 
@@ -270,6 +283,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
       leftLabel="1st Party Block" 
       rightLabel="3rd Party Block" 
       ratio="1"
+      class="switch-mode"
       checked="${this.data.getBlock(blockId)?.externalKey !== null ? "true" : "false"}"></bc-switch>
     ` : ``;
 
@@ -306,10 +320,14 @@ export class BCDatalogPlaygroundLite extends LitElement {
     return html`
       <div class="block">
         <div class="blockHeader">
-          ${close}
-          <div>${blockId == 0 ? "Authority block" : "Block " + blockId}</div>
-          ${switchContent}
-          ${blockDetails}
+          <div class="blockHeaderVerticalContainer">
+            <div class="blockHeaderHorizontalContainer">
+              ${close}
+              <div class="block-title">${blockId == 0 ? "Authority block" : "Block " + blockId}</div>
+              ${switchContent}
+            </div>
+            ${blockDetails}
+          </div>
         </div>
 
         <bc-datalog-editor
@@ -365,7 +383,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
     const query = {
       token_blocks: nonEmptyBlocks.map(({ code }) => code),
       private_key: this.data.getBlock(0)?.externalKey ?? "",
-      external_private_keys: nonEmptyBlocks.slice(1).map(
+      external_private_keys: nonEmptyBlocks.map(
         ({ externalKey }) => externalKey
       ),
     };
@@ -374,7 +392,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
     return html`<p>Token</p>
     <div class="content">
-    <code class="token">${token}</code>
+      <code class="token">${token}</code>
     </div>`
   }
 }

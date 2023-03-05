@@ -72,7 +72,8 @@ export const performExecute = (data: BlocksData, authorizer_code: string) => {
     ),
   };
   const authorizerResult = execute(authorizerQuery);
-  console.debug({ authorizerQuery, authorizerResult });
+  console.debug({ authorizerQuery }); //, authorizerResult });
+  console.debug({authorizerResult});
   authorizer_world = authorizerResult.Ok?.authorizer_world ?? [];
   authorizer_result = authorizerResult;
   markers.authorizer =

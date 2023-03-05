@@ -23,6 +23,8 @@ export function token_from_query(query: Query) : TokenResult {
     result = { Err: error as GeneratorError };
   }
 
+  console.log(query);
+
   const blocksWithErrors: Array<number> = [];
   (result.Err?.Parse?.blocks ?? []).forEach(
     (errors: Array<LibError>, bId: number) => {
