@@ -1,15 +1,15 @@
-import { css, html, LitElement, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import {css, html, LitElement, TemplateResult} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 import "./bc-datalog-editor.js";
 import "./bc-switch";
 import "./bc-key-details";
 import "./bc-export";
-import { initialize } from "./wasm.js";
-import { generate_keypair } from "@biscuit-auth/biscuit-wasm-support";
+import {initialize} from "./wasm.js";
+import {generate_keypair} from "@biscuit-auth/biscuit-wasm-support";
 import {CMError, CMMarker, performExecute} from "./lib/adapters";
-import { token_from_query } from "./lib/token";
+import {token_from_query} from "./lib/token";
 import {Configuration, ConfigurationEntry} from "./playground-configuration";
-import {BlockData, BlocksData, PayloadHandler} from "./lib/payload";
+import {BlockData, BlocksData} from "./lib/payload";
 
 /**
  * A fully tunable datalog biscuit playground
@@ -106,7 +106,8 @@ export class BCDatalogPlaygroundLite extends LitElement {
     super();
 
     const code = this.querySelector(".authorizer")?.textContent ?? "";
-    this.data = new BlocksData(code)
+
+    this.data = new BlocksData(code.replace("#<=", "<-"))
 
     const blockChildren = this.querySelectorAll(".block");
     Array.from(blockChildren)
@@ -119,10 +120,9 @@ export class BCDatalogPlaygroundLite extends LitElement {
         return new BlockData(code, externalKey);
       })
       .filter(({ code }, i) => i === 0 || code !== "")
-      .map((block, i) => {
-        let modified = block;
-        modified.code.replace("<=", "<-");
-        return modified
+      .map((block, _i) => {
+        block.code = block.code.replace("#<=", "<-")
+        return block
       } )
       .forEach((block) => {
         this.data.addBlock(block)
