@@ -119,6 +119,11 @@ export class BCDatalogPlaygroundLite extends LitElement {
         return new BlockData(code, externalKey);
       })
       .filter(({ code }, i) => i === 0 || code !== "")
+      .map((block, i) => {
+        let modified = block;
+        modified.code.replace("<=", "<-");
+        return modified
+      } )
       .forEach((block) => {
         this.data.addBlock(block)
       });
