@@ -107,7 +107,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
     const code = this.querySelector(".authorizer")?.textContent ?? "";
 
-    this.data = new BlocksData(code.replace("#<=", "<-"))
+    this.data = new BlocksData(code.replaceAll("#<=", "<-"))
 
     const blockChildren = this.querySelectorAll(".block");
     Array.from(blockChildren)
@@ -121,7 +121,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
       })
       .filter(({ code }, i) => i === 0 || code !== "")
       .map((block, _i) => {
-        block.code = block.code.replace("#<=", "<-")
+        block.code = block.code.replaceAll("#<=", "<-")
         return block
       } )
       .forEach((block) => {
