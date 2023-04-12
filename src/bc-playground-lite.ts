@@ -38,6 +38,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
   @state() started = false;
   @state() data : BlocksData;
   @state() configuration : Configuration;
+  @state() token_b64 : string;
 
   static styles = css`
     
@@ -115,6 +116,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
     const code = this.querySelector(".authorizer")?.textContent ?? "";
     this.data = new BlocksData(code.replaceAll("#<=", "<-"));
     this.configuration = new Configuration();
+    this.token_b64 = ""
   }
 
   parse_seed_token() {
@@ -272,6 +274,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
   render() {
     if (this.started) {
       // Filter empty blocks but keep the authority even if empty
+      this.updateState();
 
       let {
         parseErrors,
@@ -429,10 +432,9 @@ export class BCDatalogPlaygroundLite extends LitElement {
       </bc-authorizer-editor>`;
   }
 
-  renderToken() : TemplateResult {
-
+  updateState() {
     if (this.data.blocks.length === 0) {
-        return html``
+      return html``
     }
 
     let nonEmptyBlocks = this.data.getValidBlocks();
@@ -452,13 +454,14 @@ export class BCDatalogPlaygroundLite extends LitElement {
       this.data.blocks.forEach((block, i) => {
         block.revocation_id = revocation_ids[i] ?? null
       })
-
+      this.token_b64 = token
     }
+  }
 
-
+  renderToken() : TemplateResult {
     return html`<p>Token</p>
     <div class="content">
-      <code class="token">${token}</code>
+      <code class="token">${this.token_b64}</code>
     </div>`
   }
 }
