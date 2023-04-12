@@ -29,6 +29,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
   @property() add_block = false;
   @property() authorizer = false;
   @property() revocation_ids = false;
+  @property() display_seed_token = false;
   // Seeding
   @property() seed_token : string | null = null;
   @property() seed_private_key : string | null = null;
@@ -294,11 +295,11 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
     const authorizer = this.configuration.get(ConfigurationEntry.authorizer) ? html`${this.renderAuthorizer(markers.authorizer, parseErrors.authorizer)}` : ``;
 
-    const seed = html`<p>Seed Token</p>
+    const seed = this.configuration.get(ConfigurationEntry.display_seed_token) ? html`<p>Seed Token</p>
       <div class="content">
-<code class="token" contenteditable="true">${this.seed_token}</code>
+<code class="token">${this.seed_token}</code>
         &nbsp;
-</div>`;
+</div>` : html``;
 
     return html`
       <style>

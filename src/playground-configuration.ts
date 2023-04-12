@@ -11,7 +11,8 @@ export enum ConfigurationEntry {
   authorizer = "authorizer",
   blocks = "blocks",
   root = "root",
-  revocation_ids = "revocation_ids"
+  revocation_ids = "revocation_ids",
+  display_seed_token = "display_seed_token"
 }
 
 class ConfigValue {
@@ -37,12 +38,13 @@ export class Configuration {
       [ConfigurationEntry.result, new ConfigValue("Display Authorizer result")],
       [ConfigurationEntry.token, new ConfigValue("Display serialized token")],
       [ConfigurationEntry.blocks, new ConfigValue("Display blocks editor")],
+      [ConfigurationEntry.display_seed_token, new ConfigValue("Display seed token field")],
       [ConfigurationEntry.custom_external, new ConfigValue("Allow to customize private keys",ConfigurationEntry.blocks)],
       [ConfigurationEntry.regenerate, new ConfigValue("Allow regenerate Biscuit private key",ConfigurationEntry.blocks)],
       [ConfigurationEntry.public_key, new ConfigValue("Show public key button",ConfigurationEntry.blocks)],
       [ConfigurationEntry.add_block, new ConfigValue("Display Add Block button",ConfigurationEntry.blocks)],
       [ConfigurationEntry.third_party, new ConfigValue("Allow 3rd party blocks",ConfigurationEntry.blocks)],
-      [ConfigurationEntry.revocation_ids, new ConfigValue("Allow 3rd party blocks",ConfigurationEntry.revocation_ids)],
+      [ConfigurationEntry.revocation_ids, new ConfigValue("Display revocation IDs",ConfigurationEntry.blocks)],
     ])
   }
 
