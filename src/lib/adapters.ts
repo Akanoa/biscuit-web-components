@@ -58,8 +58,6 @@ export const performExecute = (data: BlocksData, authorizer_code: string) => {
 
   let validBlocks = data.getValidBlocks()
 
-  console.log(validBlocks);
-
   const authorizerQuery = {
     token_blocks:
       validBlocks.length > 0

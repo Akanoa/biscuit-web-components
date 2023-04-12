@@ -5,11 +5,13 @@ interface PayloadDefinition {
 
 export class BlockData {
   code : string;
+  revocation_id: string | null;
   externalKey: string | null
 
-  constructor(code: string, external_key: string | null) {
+  constructor(code: string, external_key: string | null, revocation_id: string | null) {
     this.code = code
     this.externalKey = external_key
+    this.revocation_id = revocation_id
   }
 
   setExternalKey(key: string | null) {
@@ -80,7 +82,7 @@ export class PayloadHandler {
 
      let payloadData = new BlocksData(data.authorizer_code);
      data.blocks.forEach(({code, externalKey}) => {
-        payloadData.addBlock(new BlockData(code, externalKey))
+        payloadData.addBlock(new BlockData(code, externalKey, null))
      })
 
     return payloadData

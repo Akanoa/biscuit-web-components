@@ -9,18 +9,23 @@
 <bc-playground-lite
     blocks="true"
     authorizer="true"
-    add_block="false"
+    add_block="true"
     token="true"
     result="true"
     facts="true"
     custom_external="true"
     public_key="true"
     third_party="true"
+    revocation_ids="true"
+    seed_private_key="6058d4f25d6f3c2a021019399f01fd0858561989dd101f5b2bf7cfae3b261f6b"
+    seed_token="EnYKDBgDIggKBggKEgIQDBIkCAASIO3Q9t40Kh5qcjbWJE8j2D7t_OzQWaOGyFBVcBSY53AzGkDQoEhiKR45KfCy5yiEmDayrwCIsjlNgKjpw4GW1EetBL2oVBs8TDm_T1FQEK-OOvoj-ZJKh6U1NmWCum2DNcAAIiIKILL39YHW3jwGqCL9bn6CZfvAD4QBaWpb3DT1ptL_P5Iv"
+    seed_rng="0"
     >
-  <code class="block">user_group($user, $group) #<= user($user), group($group);</code>
-  <code class="block">check if user(12)</code>
-  <code class="block">check if user(12)</code>
+  <code class="block">check if service("vente")</code>
+  <code class="block" privateKey="0db54bbfe7ce7047af16242c27ea54ca8f4942999da6875b827917821ed218d7">account(456);</code>
+
   <code class="authorizer">user_group($user, $group) #<= user($user), group($group);</code>
+
 </bc-playground-lite>
 </body>
 </html>

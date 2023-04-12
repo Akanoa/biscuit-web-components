@@ -122,6 +122,7 @@ export class BcTokenGenerator extends LitElement {
       external_private_keys: nonEmptyBlocks.map(
         ({ externalKey }) => externalKey
       ),
+      seed: null
     };
 
     const {token, result} = token_from_query(query);

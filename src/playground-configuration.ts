@@ -10,7 +10,8 @@ export enum ConfigurationEntry {
   add_block = "add_block",
   authorizer = "authorizer",
   blocks = "blocks",
-  root = "root"
+  root = "root",
+  revocation_ids = "revocation_ids"
 }
 
 class ConfigValue {
@@ -41,6 +42,7 @@ export class Configuration {
       [ConfigurationEntry.public_key, new ConfigValue("Show public key button",ConfigurationEntry.blocks)],
       [ConfigurationEntry.add_block, new ConfigValue("Display Add Block button",ConfigurationEntry.blocks)],
       [ConfigurationEntry.third_party, new ConfigValue("Allow 3rd party blocks",ConfigurationEntry.blocks)],
+      [ConfigurationEntry.revocation_ids, new ConfigValue("Allow 3rd party blocks",ConfigurationEntry.revocation_ids)],
     ])
   }
 

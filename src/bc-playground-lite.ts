@@ -5,7 +5,7 @@ import "./bc-switch";
 import "./bc-key-details";
 import "./bc-export";
 import {initialize} from "./wasm.js";
-import {generate_keypair} from "@biscuit-auth/biscuit-wasm-support";
+import {generate_keypair, parse_token, get_public_key} from "@biscuit-auth/biscuit-wasm-support";
 import {CMError, CMMarker, performExecute} from "./lib/adapters";
 import {token_from_query} from "./lib/token";
 import {Configuration, ConfigurationEntry} from "./playground-configuration";
@@ -17,6 +17,7 @@ import {BlockData, BlocksData} from "./lib/payload";
 @customElement("bc-playground-lite")
 export class BCDatalogPlaygroundLite extends LitElement {
 
+  // Display components
   @property() blocks = false;
   @property() facts = false;
   @property() token = false;
@@ -27,6 +28,11 @@ export class BCDatalogPlaygroundLite extends LitElement {
   @property() result = false;
   @property() add_block = false;
   @property() authorizer = false;
+  @property() revocation_ids = false;
+  // Seeding
+  @property() seed_token : string | null = null;
+  @property() seed_private_key : string | null = null;
+  @property() seed_rng : string | null = null;
 
   @state() started = false;
   @state() data : BlocksData;
@@ -106,34 +112,55 @@ export class BCDatalogPlaygroundLite extends LitElement {
     super();
 
     const code = this.querySelector(".authorizer")?.textContent ?? "";
-
-    this.data = new BlocksData(code.replaceAll("#<=", "<-"))
-
-    const blockChildren = this.querySelectorAll(".block");
-    Array.from(blockChildren)
-      .map((b, i) => {
-        const code = b.textContent ?? "";
-        let externalKey = null;
-        if (i > 0) {
-          externalKey = b.getAttribute("privateKey");
-        }
-        return new BlockData(code, externalKey);
-      })
-      .filter(({ code }, i) => i === 0 || code !== "")
-      .map((block, _i) => {
-        block.code = block.code.replaceAll("#<=", "<-")
-        return block
-      } )
-      .forEach((block) => {
-        this.data.addBlock(block)
-      });
-
+    this.data = new BlocksData(code.replaceAll("#<=", "<-"));
     this.configuration = new Configuration();
+  }
 
+  parse_seed_token() {
+    let parseResult = parse_token({
+      data: this.seed_token,
+      public_key: get_public_key(this.seed_private_key as string)
+    });
+
+    // Populate blocks
+    parseResult.token_blocks.map((code: string, i: number) => {
+      return new BlockData(
+        code, parseResult.external_keys[i], parseResult.revocation_ids[i]
+      )
+    }).forEach((block: BlockData) =>  {
+      this.data.addBlock(block)
+    });
   }
 
   firstUpdated() {
     initialize().then(() => {
+      // If there is a seed token use it to populate blocks
+      if (this.seed_token !== null && this.seed_private_key !== null) {
+        this.parse_seed_token();
+        let authority_block = this.data.getBlock(0);
+        if (authority_block !== null) {
+          authority_block.externalKey = structuredClone(this.seed_private_key);
+        }
+      }
+
+      const blockChildren = this.querySelectorAll(".block");
+      Array.from(blockChildren)
+        .map(element => {
+          const code = element.textContent ?? "";
+          let externalKey = element.getAttribute("privateKey");
+
+          return new BlockData(code, externalKey, null);
+        })
+        .filter(({ code }, i) => i === 0 || code !== "")
+        .map((block, _i) => {
+          block.code = block.code.replaceAll("#<=", "<-")
+          return block
+        } )
+        .forEach((block) => {
+          this.data.addBlock(block)
+        });
+
+
       if (this.data.getBlock(0)?.externalKey === null) {
         const keypair = generate_keypair();
         this.data.getBlock(0)?.setExternalKey(keypair.private_key);
@@ -147,11 +174,23 @@ export class BCDatalogPlaygroundLite extends LitElement {
     if (typeof newval === 'string') {
       this.configuration.set(name, newval === "true")
     }
+
+    if (name === "seed_token") {
+      this.seed_token = newval
+    }
+
+    if (name === "seed_rng") {
+      this.seed_rng = newval
+    }
+
+    if (name === "seed_private_key") {
+      this.seed_private_key = newval
+    }
   }
 
   // A new block is added to the chain
   addBlock() {
-    this.data.addBlock(new BlockData("", null))
+    this.data.addBlock(new BlockData("", null, null))
     this.requestUpdate("data")
   }
 
@@ -165,7 +204,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
   // The content of the block has changed
   onUpdatedBlock(blockId: number, e: { detail: { code: string } }) {
     const previousKey = this.data.getBlock(blockId)?.externalKey ?? null;
-    this.data.setBlock(blockId, new BlockData(e.detail.code, previousKey));
+    this.data.setBlock(blockId, new BlockData(e.detail.code, previousKey, null));
     this.requestUpdate("data")
   }
 
@@ -246,8 +285,6 @@ export class BCDatalogPlaygroundLite extends LitElement {
         .content=${authorizer_world}
     ></bc-authorizer-content>`;
 
-    console.debug(authorizer_result)
-
     const facts = this.configuration.get(ConfigurationEntry.facts) ? factContent : html``;
     const token = this.configuration.get(ConfigurationEntry.token) ? this.renderToken() : ``;
 
@@ -257,6 +294,12 @@ export class BCDatalogPlaygroundLite extends LitElement {
 
     const authorizer = this.configuration.get(ConfigurationEntry.authorizer) ? html`${this.renderAuthorizer(markers.authorizer, parseErrors.authorizer)}` : ``;
 
+    const seed = html`<p>Seed Token</p>
+      <div class="content">
+<code class="token" contenteditable="true">${this.seed_token}</code>
+        &nbsp;
+</div>`;
+
     return html`
       <style>
         #export_button {
@@ -264,6 +307,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
           margin-bottom: 30px;
         }
       </style>
+      ${seed}
       ${this.renderBlocks(markers.blocks, parseErrors.blocks)}
       ${authorizer}
       ${result}
@@ -322,6 +366,12 @@ export class BCDatalogPlaygroundLite extends LitElement {
     const close = blockId !== 0 && this.configuration.get(ConfigurationEntry.add_block) ?
       html`<div @click="${() => this.deleteBlock(blockId)}" class="close">&times;</div>` : '';
 
+    let revocation_id = this.data.getBlock(blockId)?.revocation_id;
+    if (revocation_id && this.configuration.get(ConfigurationEntry.revocation_ids) === true) {
+      revocation_id =  revocation_id.substring(0, 10) + "[...]" + revocation_id.substring(revocation_id.length - 11);
+    }
+    let revocationDetails = this.configuration.get(ConfigurationEntry.revocation_ids) ? html`Revocation ID : ${revocation_id}` : "";
+
     return html`
       <div class="block">
         <div class="blockHeader">
@@ -332,6 +382,7 @@ export class BCDatalogPlaygroundLite extends LitElement {
               ${switchContent}
             </div>
             ${blockDetails}
+            ${revocationDetails}
           </div>
         </div>
 
@@ -388,12 +439,21 @@ export class BCDatalogPlaygroundLite extends LitElement {
     const query = {
       token_blocks: nonEmptyBlocks.map(({ code }) => code),
       private_key: this.data.getBlock(0)?.externalKey ?? "",
+      seed: this.seed_rng,
       external_private_keys: nonEmptyBlocks.map(
         ({ externalKey }) => externalKey
       ),
     };
 
-    let {token} = token_from_query(query);
+    let {token, revocation_ids, result} = token_from_query(query);
+
+    if (result.Ok) {
+      this.data.blocks.forEach((block, i) => {
+        block.revocation_id = revocation_ids[i] ?? null
+      })
+
+    }
+
 
     return html`<p>Token</p>
     <div class="content">

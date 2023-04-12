@@ -113,7 +113,7 @@ export class BCDatalogPlayground extends LitElement {
 
   // A new block is added to the chain
   addBlock() {
-    this.data.addBlock(new BlockData("", null))
+    this.data.addBlock(new BlockData("", null, null))
     this.requestUpdate("data")
   }
 
@@ -127,7 +127,7 @@ export class BCDatalogPlayground extends LitElement {
   // The content of the block has changed
   onUpdatedBlock(blockId: number, e: { detail: { code: string } }) {
     const previousKey = this.data.getBlock(blockId)?.externalKey ?? null;
-    this.data.setBlock(blockId, new BlockData(e.detail.code, previousKey));
+    this.data.setBlock(blockId, new BlockData(e.detail.code, previousKey, null));
     this.requestUpdate("data")
   }
 
@@ -352,6 +352,7 @@ export class BCDatalogPlayground extends LitElement {
       external_private_keys: nonEmptyBlocks.slice(1).map(
         ({ externalKey }) => externalKey
       ),
+      seed: null
     };
 
     let {token} = token_from_query(query);

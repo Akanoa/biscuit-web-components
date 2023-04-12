@@ -1,29 +1,39 @@
 import { GeneratorError, LibError, Result } from "./adapters";
-import { generate_token } from "@biscuit-auth/biscuit-wasm-support";
+import { generate_token, parse_token } from "@biscuit-auth/biscuit-wasm-support";
 
 interface Query {
   token_blocks: Array<string | null>,
   private_key: string | null,
   external_private_keys: Array<string|null>,
+  seed: string | null
 }
 
 interface TokenResult {
   token: string,
-  result: Result<string, GeneratorError>
+  revocation_ids: [string],
+  result: Result<ParseTokenResult, GeneratorError>
+}
+
+interface ParseTokenResult {
+  token: string,
+  revocation_ids: [string]
 }
 
 export function token_from_query(query: Query) : TokenResult {
-  let result: Result<string, GeneratorError>;
+  let result: Result<ParseTokenResult, GeneratorError>;
 
   try {
+    let token = generate_token(query)
+    let parsed = parse_token({data: token});
+
+    let revocation_ids = parsed.revocation_ids ?? null;
+
     result = {
-      Ok: generate_token(query),
+      Ok: {token, revocation_ids},
     };
   } catch (error) {
     result = { Err: error as GeneratorError };
   }
-
-  console.log(query);
 
   const blocksWithErrors: Array<number> = [];
   (result.Err?.Parse?.blocks ?? []).forEach(
@@ -52,9 +62,12 @@ export function token_from_query(query: Query) : TokenResult {
       blockList;
   }
 
-  const token = result.Ok ?? errorMessage;
+  const token = result.Ok?.token ?? errorMessage;
+  const revocation_ids = result.Ok?.revocation_ids ?? [] as unknown as [string];
+
   return {
     token,
-    result
+    result,
+    revocation_ids
   }
 }
